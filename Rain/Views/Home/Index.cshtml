@@ -1,0 +1,56 @@
+﻿@using Model
+@{
+    ViewBag.Title = "Home Page";
+}
+<div id="test" class="gmap"></div>
+
+@section scripts
+{
+    <script>
+        var rainInfo = $.connection.RainHub;
+
+
+        $("#test").gmap3({
+            map: { options: { center: [25.0961583, 121.4840275], zoom: 11 } },
+            panel: {
+                options: {
+                    content: '<div id="panel-box" class="line">更新時間：<span class="value"></span></div>'
+                }
+            }
+        });
+        rainInfo.client.GetRainInfo = function (jsonString) {
+            testLoad(jsonString);
+        };
+
+        function testLoad(jsonString) {
+            var mapValues = [];
+            var jsonData = jQuery.parseJSON(jsonString);
+
+            $.each(jsonData, function (index) {
+                mapValues.push({ latLng: [jsonData[index].Lat, jsonData[index].Lon], options: { icon: jsonData[index].Icon } });
+            });
+            $("#panel-box").find(".value").html(getNowTime());
+            $("#test").gmap3({
+                clear: {
+                    name: ["marker"]
+                },
+                marker: {
+                    values: mapValues,
+                    tag: "mmm"
+                }
+            });
+        }
+        function getNowTime() {
+            var timeDate = new Date();
+            var tMonth = (timeDate.getMonth() + 1) > 9 ? (timeDate.getMonth() + 1) : '0' + (timeDate.getMonth() + 1);
+            var tDate = timeDate.getDate() > 9 ? timeDate.getDate() : '0' + timeDate.getDate();
+            var tHours = timeDate.getHours() > 9 ? timeDate.getHours() : '0' + timeDate.getHours();
+            var tMinutes = timeDate.getMinutes() > 9 ? timeDate.getMinutes() : '0' + timeDate.getMinutes();
+            var tSeconds = timeDate.getSeconds() > 9 ? timeDate.getSeconds() : '0' + timeDate.getSeconds();
+            return timeDate.getFullYear() + '/' + tMonth + '/' + tDate + ' ' + tHours + ':' + tMinutes + ':' + tSeconds;
+        }
+
+        $.connection.hub.start();
+    </script>
+}
+}
